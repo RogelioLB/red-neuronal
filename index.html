@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+    <title>Document</title>
+    <style>
+      .color {
+        background-color: black;
+        color: white;
+        margin-left: 200px;
+      }
+    </style>
+  </head>
+  <body>
+    <input type="color" />
+    <div class="color">
+      <h2>Hola</h2>
+    </div>
+    <script>
+      const input = tf.tensor2d([
+        [1, 1, 1],
+        [0, 0, 0],
+        [0, 1, 0],
+      ]);
+      const output = tf.tensor2d([[0], [1], [0]]);
+
+      const layer = tf.layers.dense({ units: 1, inputShape: [3] });
+
+      const model = tf.sequential({ layers: [layer] });
+
+      model.compile({
+        optimizer: tf.train.adam(.01),
+        metrics: ["accuracy"],
+        loss: "meanSquaredError",
+      });
+      function getRgb(ev) {
+        const color = ev.target.value;
+        const r = parseInt(color.substr(1, 2), 16) / 255;
+        const g = parseInt(color.substr(3, 2), 16) / 255;
+        const b = parseInt(color.substr(5, 2), 16) / 255;
+        return { r, g, b };
+      }
+      const div = document.querySelector("div.color");
+      model.fit(input, output, { epochs: 500 }).then(() => console.log("gg"));
+      document.querySelector("input").addEventListener("input", async (e) => {
+        const { r, g, b } = getRgb(e);
+        div.style.backgroundColor = e.target.value;
+        const value = Array.from(
+          await model.predict(tf.tensor2d([[r, g, b]])).data()
+        )[0];
+        console.log(value);
+        if (value > 0.5) {
+          div.style.color = "white";
+        } else {
+          div.style.color = "black";
+        }
+      });
+    </script>
+  </body>
+</html>
